@@ -30,7 +30,8 @@ module.exports = function (subject, clip) {
 
             if(intersection) {
                 var isEntering = !inside(point(clip[k][0], clip[k][1]), subjectPolygon)
-                currentSubject.insertBefore(new Point(intersection[0], intersection[1]), isEntering);
+                currentSubject.next.insertBefore(new Point(intersection[0], intersection[1]), isEntering);
+                currentClip.next.insertBefore(new Point(intersection[0], intersection[1]), isEntering);
             }
             currentClip = currentClip.next;
         }

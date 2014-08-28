@@ -4,6 +4,8 @@ var polygon = require('turf-polygon');
 var point = require('turf-point');
 
 module.exports = function (subject, clip) {
+    var subjectPolygon = polygon([subject])
+    //var clipPolygon = polygon([clip])
     var subjectList = new Polygon();
     var clipList = new Polygon();
 
@@ -158,7 +160,7 @@ Polygon.prototype = {
 };
 
 https://github.com/mapbox/seidel/blob/master/src/point.js
-function Point(x, y, entrering) {
+function Point(x, y, entering) {
     this.x = x;
     this.y = y;
     this.entering = entering;

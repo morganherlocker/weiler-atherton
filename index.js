@@ -2,27 +2,22 @@
 var inside = require('turf-inside');
 var polygon = require('turf-polygon');
 var point = require('turf-point');
-var dll = require('doubly-linked-list');
 
 module.exports = function (subject, clip) {
-    var subjectPolygon = polygon([subject])
-    var clipPolygon = polygon([clip])
-    console.log(JSON.stringify(subjectPolygon))
-    console.log(JSON.stringify(clipPolygon))
-    // get intersections
-    var subjectWithIntersects = deepCopy(subject);
-    var clipWithIntersects = deepCopy(clip);
-    var intersections = [];
-    var entering = [];
-    var exiting = [];
-    var result = [];
-    var enteringCount = 0;
-    var exitingCount = 0;
-    var list;
+    var subjectList = new Polygon();
+    var clipList = new Polygon();
 
     for(var i = 0; i < subject.length-1; i++){
-        for(var k = 0; k < clip.length-1; k++){
-            console.log('---')
+        subjectList.add(new Point(subject[i][0], subject[i][1]));
+    }
+    for(var i = 0; i < clip.length-1; i++){
+        clipList.add(new Point(clip[i][0], clip[i][1]));
+    }
+
+    var currentSubject = subjectList.first;
+    var currentClip = clipList.first;
+    for(var i = 0; i < subject.length-1; i++) {
+        for(var k = 0; k < clip.length-1; k++) {
             var intersection = checkLineIntersection(
                 subject[i][0],
                 subject[i][1],
@@ -33,33 +28,14 @@ module.exports = function (subject, clip) {
                 clip[k+1][0],
                 clip[k+1][1]);
 
-            if(intersection){
-                console.log(intersection)
-                var isExiting = inside(point(clip[k][0], clip[k][1]), subjectPolygon)
-                if(isExiting){
-                    exiting.push(intersection)
-                    intersection.push('exiting');
-                } else {
-                    entering.push(intersection)
-                    intersection.push('entering');
-                }
-
-                subjectWithIntersects.splice(i, 0, intersection);
-                clipWithIntersects.splice(k, 0, intersection)
-                intersections.push(intersection);
+            if(intersection) {
+                var isEntering = !inside(point(clip[k][0], clip[k][1]), subjectPolygon)
+                currentSubject.insertBefore(new Point(intersection[0], intersection[1]), isEntering);
             }
+            currentClip = currentClip.next;
         }
+        currentSubject = currentSubject.next;
     }
-
-    list = dll(intersections)
-}
-
-function deepCopy(arr){
-    var copy = []   
-    arr.forEach(function(pt){
-        copy.push(pt[0], pt[1])
-    });
-    return copy;
 }
 
 // modified from http://jsfiddle.net/justin_c_rounds/Gd2S2/light/
@@ -111,15 +87,78 @@ function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, l
     }
 }
 
+// polygon contour as a doubly linked list
+// https://github.com/mapbox/seidel/blob/master/src/polygon.js
+function Polygon() {
+    this.length = 0;
+    this.first = null;
+    this.last = null;
+}
 
+function PolygonNode(point) {
+    this.point = point;
+    this.next = null;
+    this.prev = null;
+    this.ear = false;
+}
 
-1       
-2       1
-    1
-3       2
-4       3
-    2
-5       4
+Polygon.prototype = {
+    add: function (point) {
+        var node = new PolygonNode(point);
 
+        if (!this.length) {
+            this.first = this.last = node;
 
-[1,0,0], [2,0,1]
+        } else {
+            this.last.next = node;
+            node.prev = this.last;
+            this.last = node;
+        }
+
+        this.length++;
+    },
+
+    remove: function (node) {
+        if (!this.length) return;
+
+        if (node === this.first) {
+            this.first = this.first.next;
+
+            if (!this.first) this.last = null;
+            else this.first.prev = null;
+
+        } else if (node === this.last) {
+            this.last = this.last.prev;
+            this.last.next = null;
+
+        } else {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+
+        node.prev = null;
+        node.next = null;
+
+        this.length--;
+    },
+
+    insertBefore: function (point, node) {
+        var newNode = new PolygonNode(point);
+        newNode.prev = node.prev;
+        newNode.next = node;
+
+        if (!node.prev) this.first = newNode;
+        else node.prev.next = newNode;
+
+        node.prev = newNode;
+
+        this.length++;
+    }
+};
+
+https://github.com/mapbox/seidel/blob/master/src/point.js
+function Point(x, y, entrering) {
+    this.x = x;
+    this.y = y;
+    this.entering = entering;
+}

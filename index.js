@@ -22,7 +22,7 @@ module.exports = function (subject, clip) {
     for(var i = 0; i < subject.length; i++) {
         for(var k = 0; k < clip.length; k++) {
             console.log(k)
-            var intersection = checkLineIntersection(
+            var intersection = lineIntersects(
                 currentSubject.point.x,
                 currentSubject.point.y,
                 currentSubject.next.point.x,
@@ -45,7 +45,7 @@ module.exports = function (subject, clip) {
 }
 
 // modified from http://jsfiddle.net/justin_c_rounds/Gd2S2/light/
-function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
+function lineIntersects(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
     // if the lines intersect, the result contains the x and y of the intersection (treating the lines as infinite) and booleans for whether line segment 1 or line segment 2 contain the point
     var denominator, a, b, numerator1, numerator2, result = {
         x: null,
@@ -159,14 +159,14 @@ Polygon.prototype = {
     }
 };
 
-//https://github.com/mapbox/seidel/blob/master/src/point.js
+//modified from https://github.com/mapbox/seidel/blob/master/src/point.js
 function Point(x, y, entering) {
     this.x = x;
     this.y = y;
     this.entering = entering;
 }
 
-//https://github.com/Turfjs/turf-inside/blob/master/index.js
+//modified from https://github.com/Turfjs/turf-inside/blob/master/index.js
 function isInside(point, polygon){
   var x = point[0];
   var y = point[1];

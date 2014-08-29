@@ -4,36 +4,39 @@ var polygon = require('turf-polygon');
 var point = require('turf-point');
 
 module.exports = function (subject, clip) {
-    var subjectPolygon = polygon([subject])
+    var subjectPolygon = subject;
+    subjectPolygon.push([subjectPolygon[0], subjectPolygon[1]]);
     //var clipPolygon = polygon([clip])
     var subjectList = new Polygon();
     var clipList = new Polygon();
 
-    for(var i = 0; i < subject.length-1; i++){
+    for(var i = 0; i < subject.length; i++){
         subjectList.add(new Point(subject[i][0], subject[i][1]));
     }
-    for(var i = 0; i < clip.length-1; i++){
+    for(var i = 0; i < clip.length; i++){
         clipList.add(new Point(clip[i][0], clip[i][1]));
     }
 
     var currentSubject = subjectList.first;
-    var currentClip = clipList.first;
-    for(var i = 0; i < subject.length-1; i++) {
-        for(var k = 0; k < clip.length-1; k++) {
+    var clipList = clipList.first;
+    for(var i = 0; i < subject.length; i++) {
+        for(var k = 0; k < clip.length; k++) {
+            console.log(k)
             var intersection = checkLineIntersection(
-                subject[i][0],
-                subject[i][1],
-                subject[i+1][0],
-                subject[i+1][1],
-                clip[k][0],
-                clip[k][1],
-                clip[k+1][0],
-                clip[k+1][1]);
+                currentSubject.point.x,
+                currentSubject.point.y,
+                currentSubject.next.point.x,
+                currentSubject.next.point.y,
+                currentClip.point.x,
+                currentClip.point.y,
+                currentClip.next.point.x,
+                currentClip.next.point.y);
 
             if(intersection) {
-                var isEntering = !inside(point(clip[k][0], clip[k][1]), subjectPolygon)
-                currentSubject.next.insertBefore(new Point(intersection[0], intersection[1]), isEntering);
-                currentClip.next.insertBefore(new Point(intersection[0], intersection[1]), isEntering);
+                var isEntering = !isInside([currentClip.point.x, currentClip.point.y], subjectPolygon);
+                subjectList.insertBefore(new Point(intersection[0], intersection[1], isEntering), currentSubject.next);
+                console.log(currentClip)
+                clipList.insertBefore(new Point(intersection[0], intersection[1], isEntering), currentClip.next);
             }
             currentClip = currentClip.next;
         }
@@ -68,11 +71,7 @@ function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, l
     // if we cast these lines infinitely in both directions, they intersect here:
     result.x = line1StartX + (a * (line1EndX - line1StartX));
     result.y = line1StartY + (a * (line1EndY - line1StartY));
-/*
-        // it is worth noting that this should be the same as:
-        x = line2StartX + (b * (line2EndX - line2StartX));
-        y = line2StartX + (b * (line2EndY - line2StartY));
-        */
+
     // if line1 is a segment and line2 is infinite, they intersect if:
     if (a > 0 && a < 1) {
         result.onLine1 = true;
@@ -146,6 +145,7 @@ Polygon.prototype = {
     },
 
     insertBefore: function (point, node) {
+        //console.log(node)
         var newNode = new PolygonNode(point);
         newNode.prev = node.prev;
         newNode.next = node;
@@ -159,9 +159,27 @@ Polygon.prototype = {
     }
 };
 
-https://github.com/mapbox/seidel/blob/master/src/point.js
+//https://github.com/mapbox/seidel/blob/master/src/point.js
 function Point(x, y, entering) {
     this.x = x;
     this.y = y;
     this.entering = entering;
+}
+
+//https://github.com/Turfjs/turf-inside/blob/master/index.js
+function isInside(point, polygon){
+  var x = point[0];
+  var y = point[1];
+  var vs = polygon;
+
+  var isInside = false;
+  for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    var xi = vs[i][0], yi = vs[i][1];
+    var xj = vs[j][0], yj = vs[j][1];
+    
+    var intersect = ((yi > y) != (yj > y))
+        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) isInside = !isInside;
+  }
+  return isInside;
 }

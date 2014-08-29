@@ -3,6 +3,7 @@
 // http://en.wikipedia.org/wiki/Weiler%E2%80%93Atherton_clipping_algorithm
 
 module.exports = function (subject, clip) {
+    var subjectRing = subject;
     var subjectList = new Polygon();
     var clipList = new Polygon();
 
@@ -16,16 +17,12 @@ module.exports = function (subject, clip) {
     var currentSubject = subjectList.first;
     var currentClip = clipList.first;
 
-    for(var i = 0; i < subject.length; i++) {
-        for(var k = 0; k < clip.length; k++) {
+    for(var i = 0; i < subject.length-1; i++) {
+        currentClip = clipList.first
+        for(var k = 0; k < clip.length-1; k++) {
             var nextSubject = currentSubject.next;
             var nextClip = currentClip.next;
-            if(!nextSubject){
-                nextSubject = subjectList.first;
-            }
-            if(!nextClip){
-                nextClip = clipList.first;
-            }
+
             var intersection = lineIntersects(
                     currentSubject.point.x,
                     currentSubject.point.y,
@@ -36,9 +33,9 @@ module.exports = function (subject, clip) {
                     nextClip.point.x,
                     nextClip.point.y
                 );
-            //console.log(intersection)
+
             if(intersection) {
-                var isEntering = !isInside([currentClip.point.x, currentClip.point.y], subject);
+                var isEntering = !isInside([currentClip.point.x, currentClip.point.y], subjectRing);
                 subjectList.insertBefore(new Point(intersection[0], intersection[1], isEntering), nextSubject);
                 clipList.insertBefore(new Point(intersection[0], intersection[1], isEntering), nextClip);
             }
@@ -156,7 +153,6 @@ Polygon.prototype = {
     },
 
     insertBefore: function (point, node) {
-        //console.log(node)
         var newNode = new PolygonNode(point);
         newNode.prev = node.prev;
         newNode.next = node;

@@ -1,4 +1,6 @@
-// reference http://cs1.bradley.edu/public/jcm/weileratherton.html
+// reference:
+// http://cs1.bradley.edu/public/jcm/weileratherton.html
+// http://en.wikipedia.org/wiki/Weiler%E2%80%93Atherton_clipping_algorithm
 var inside = require('turf-inside');
 var polygon = require('turf-polygon');
 var point = require('turf-point');

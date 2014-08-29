@@ -18,6 +18,10 @@ test('clip', function(t){
             [
               -58.88671875,
               28.844673680771795
+            ],
+            [
+              -72.94921875,
+              28.844673680771795
             ]
           ]
 
@@ -37,12 +41,16 @@ test('clip', function(t){
 	            [
 	              -65.8740234375,
 	              34.125447565116126
-	            ]
+	            ],
+              [
+                -77.9150390625,
+                34.125447565116126
+              ]
 	        ]
 
 
 	var clipped = clipper(subject, clip)
-	t.ok(clipped)
+	t.ok(clipped, 'clip')
 	t.notEqual(clipped.length, 0)
 	t.end()
 });

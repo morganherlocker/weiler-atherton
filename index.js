@@ -3,9 +3,6 @@
 // http://en.wikipedia.org/wiki/Weiler%E2%80%93Atherton_clipping_algorithm
 
 module.exports = function (subject, clip) {
-    var subjectPolygon = subject;
-    subjectPolygon.push([subjectPolygon[0], subjectPolygon[1]]);
-    //var clipPolygon = polygon([clip])
     var subjectList = new Polygon();
     var clipList = new Polygon();
 
@@ -18,6 +15,7 @@ module.exports = function (subject, clip) {
 
     var currentSubject = subjectList.first;
     var currentClip = clipList.first;
+
     for(var i = 0; i < subject.length; i++) {
         for(var k = 0; k < clip.length; k++) {
             var nextSubject = currentSubject.next;
@@ -29,19 +27,19 @@ module.exports = function (subject, clip) {
                 nextClip = clipList.first;
             }
             var intersection = lineIntersects(
-                currentSubject.point.x,
-                currentSubject.point.y,
-                nextSubject.point.x,
-                nextSubject.point.y,
-                currentClip.point.x,
-                currentClip.point.y,
-                nextClip.point.x,
-                nextClip.point.y);
-
+                    currentSubject.point.x,
+                    currentSubject.point.y,
+                    nextSubject.point.x,
+                    nextSubject.point.y,
+                    currentClip.point.x,
+                    currentClip.point.y,
+                    nextClip.point.x,
+                    nextClip.point.y
+                );
+            //console.log(intersection)
             if(intersection) {
-                var isEntering = !isInside([currentClip.point.x, currentClip.point.y], subjectPolygon);
+                var isEntering = !isInside([currentClip.point.x, currentClip.point.y], subject);
                 subjectList.insertBefore(new Point(intersection[0], intersection[1], isEntering), nextSubject);
-                console.log(currentClip)
                 clipList.insertBefore(new Point(intersection[0], intersection[1], isEntering), nextClip);
             }
             if(currentClip.next){
@@ -54,7 +52,7 @@ module.exports = function (subject, clip) {
     }
     // walk the lists
 
-    
+
 }
 
 // modified from http://jsfiddle.net/justin_c_rounds/Gd2S2/light/

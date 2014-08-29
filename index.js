@@ -17,30 +17,44 @@ module.exports = function (subject, clip) {
     }
 
     var currentSubject = subjectList.first;
-    var clipList = clipList.first;
+    var currentClip = clipList.first;
     for(var i = 0; i < subject.length; i++) {
         for(var k = 0; k < clip.length; k++) {
-            console.log(k)
+            var nextSubject = currentSubject.next;
+            var nextClip = currentClip.next;
+            if(!nextSubject){
+                nextSubject = subjectList.first;
+            }
+            if(!nextClip){
+                nextClip = clipList.first;
+            }
             var intersection = lineIntersects(
                 currentSubject.point.x,
                 currentSubject.point.y,
-                currentSubject.next.point.x,
-                currentSubject.next.point.y,
+                nextSubject.point.x,
+                nextSubject.point.y,
                 currentClip.point.x,
                 currentClip.point.y,
-                currentClip.next.point.x,
-                currentClip.next.point.y);
+                nextClip.point.x,
+                nextClip.point.y);
 
             if(intersection) {
                 var isEntering = !isInside([currentClip.point.x, currentClip.point.y], subjectPolygon);
-                subjectList.insertBefore(new Point(intersection[0], intersection[1], isEntering), currentSubject.next);
+                subjectList.insertBefore(new Point(intersection[0], intersection[1], isEntering), nextSubject);
                 console.log(currentClip)
-                clipList.insertBefore(new Point(intersection[0], intersection[1], isEntering), currentClip.next);
+                clipList.insertBefore(new Point(intersection[0], intersection[1], isEntering), nextClip);
             }
-            currentClip = currentClip.next;
+            if(currentClip.next){
+                currentClip = currentClip.next;
+            }
         }
-        currentSubject = currentSubject.next;
+        if(currentSubject.next){
+            currentSubject = currentSubject.next;
+        }
     }
+    // walk the lists
+
+    
 }
 
 // modified from http://jsfiddle.net/justin_c_rounds/Gd2S2/light/
